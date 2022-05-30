@@ -1,4 +1,4 @@
-use fuels::{prelude::*, tx::ContractId};
+use fuels::{prelude::*};//, tx::ContractId
 use fuels_abigen_macro::abigen;
 
 // Load abi from json
@@ -169,6 +169,18 @@ async fn construct() {
 
     assert_eq!(response.value, true);
 
+
+    //check whether the access closed
+        
+    let response = _ser_3
+    .instance
+    .vote(2)
+    .call_params(CallParameters::new(Some(1), None))
+    .call()
+    .await
+    .unwrap(); 
+
+    assert_eq!(response.value, false);
 }
 
 
@@ -265,7 +277,7 @@ async fn assets() {
     .unwrap();
 
     assert_eq!(response.value, 4); 
-    
+
     //check the correct number of votes
     let response = _deployer
     .instance
@@ -286,5 +298,122 @@ async fn assets() {
 
     assert_eq!(response.value, 2); 
 
+
+}
+
+#[tokio::test]
+async fn quadratic_formula() {
+    let (_deployer, _ser_2, _ser_3) = set_up().await;
+
+    let response = _deployer
+    .instance
+    .constructor(_deployer.wallet.address())
+    .call()
+    .await
+    .unwrap(); 
+
+    assert_eq!(response.value, true);
+
+
+    let response = _deployer
+    .instance
+    .open_access(_ser_3.wallet.address())
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, true);
+
+    let response = _ser_3
+    .instance
+    .vote(2)
+    .call_params(CallParameters::new(Some(10), None))
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, true);
+
+    // check the asset transfer
+    let response = _deployer
+    .instance
+    .get_balance_2()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 10); 
+
+    //check the correct number of votes
+    let response = _deployer
+    .instance
+    .get_count_2()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 1); 
+
+    //check the correct number of votes
+    let response = _deployer
+    .instance
+    .get_n_voters()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 1); 
+
+    // second vote
+
+    let response = _deployer
+    .instance
+    .open_access(_ser_2.wallet.address())
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, true);
+
+    let response = _ser_2
+    .instance
+    .vote(1)
+    .call_params(CallParameters::new(Some(2), None))
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, true);
+
+   // check the asset transfer
+    let response = _deployer
+    .instance
+    .get_balance_1()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 2); 
+ 
+    //check the correct number of votes
+    let response = _deployer
+    .instance
+    .get_count_2()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 1); 
+
+    //check the correct number of votes
+    let response = _deployer
+    .instance
+    .get_n_voters()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 2); 
+ 
 
 }
