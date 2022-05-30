@@ -9,6 +9,7 @@ use std::{
     contract_id::ContractId,
     result::*,
     revert::revert,
+    hash::sha256,
     token::transfer_to_output,
 };
 
@@ -24,10 +25,7 @@ struct Choice {
     sum: u64
 }
 
-const STORAGE_KEY: b256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
-
 storage {
-    asset: ContractId,
     creator: User,
     state: u64,
     voter: User,
@@ -36,12 +34,12 @@ storage {
     choice_3: Choice,
 }
 
+abi MyContract {                    //, asset: ContractId
+    fn constructor(creator: Address) -> bool;
 
-abi MyContract {
-    fn constructor(creator: Address, asset: ContractId) -> bool;
+    fn vote(choice: u64) -> bool;
 
     fn open_access(voter: Address) -> bool;
-    fn vote(choice: u64) -> bool;
     
     fn get_option_1() -> str[1];
     fn get_option_2() -> str[1];
@@ -49,24 +47,30 @@ abi MyContract {
 
     fn is_admin() -> bool;
     fn get_n_voters() -> u64;
+
+    fn get_balance_1() -> u64;
+    fn get_balance_2() -> u64;
+    fn get_balance_3() -> u64;
+
     fn get_count_1()-> u64;
     fn get_count_2()-> u64;
     fn get_count_3()-> u64;
+    
     fn get_state() -> u64;
     fn get_creator() -> Address;
 }
 
+
 impl MyContract for Contract {
 
-
-    fn constructor(creator: Address, asset: ContractId) -> bool {
+    fn constructor(creator: Address) -> bool {
         assert(storage.state == 0);
 
         storage.creator = User {
             address: creator, admin: true
         };
         storage.state = 1;
-        storage.asset = asset;
+        //storage.asset = asset;
 
         true
     }
@@ -76,7 +80,8 @@ impl MyContract for Contract {
         let sender: Result<Sender, AuthError> = msg_sender();
 
         if let Sender::Address(address) = sender.unwrap() {
-            assert(storage.state ==1);
+            
+            assert(storage.state == 1);
 
             if (address == storage.creator.address) {
                 storage.voter = User {
@@ -92,32 +97,41 @@ impl MyContract for Contract {
     }
 
 
-    fn vote(choice: u64) -> bool {
+    fn vote(choice:u64) -> bool {
+        
         let sender: Result<Sender, AuthError> = msg_sender();
-
+        
         if let Sender::Address(address) = sender.unwrap() {
+
             assert(storage.state == 1);
+            
             if (address == storage.voter.address) {
-                let value = get::<u64>(STORAGE_KEY);
-                store(STORAGE_KEY, value+1);
                 if choice == 1 {
-                    storage.choice_1.count  = storage.choice_1.count + 1
-                    } else if choice == 2 {
-                    storage.choice_2.count  = storage.choice_2.count  + 1
-                } else {
-                    storage.choice_3.count  = storage.choice_3.count  + 1
-                }
-                storage.voter = User {
-                    address: storage.creator.address, admin: false
+                        storage.choice_1.count  = storage.choice_1.count + 1;
+                        storage.choice_1.sum = storage.choice_1.sum + msg_amount();
                 };
-                return true;
+                if choice == 2 {
+                        storage.choice_2.count  = storage.choice_1.count + 1;
+                        storage.choice_2.sum = storage.choice_2.sum + msg_amount();
+                        return true;
+                };
+                if choice == 3 {
+                        storage.choice_3.count  = storage.choice_3.count  + 1;
+                        storage.choice_3.sum = storage.choice_3.sum + msg_amount();
+                };
+
+                //close the access to vote again
+                storage.voter = User {
+                        address: storage.creator.address, admin: false
+                }; 
+            return false;
             };
+            return false;
         } else {
             revert(0);
         };
-        false
+        return false;
     }
-
 
     fn is_admin() -> bool {
         
@@ -146,8 +160,7 @@ impl MyContract for Contract {
     }
     
     fn get_n_voters() -> u64 {
-        let value = get::<u64>(STORAGE_KEY);
-        value
+        storage.choice_1.count+storage.choice_2.count+storage.choice_3.count
     }
 
     fn get_count_1() -> u64 {
@@ -160,6 +173,18 @@ impl MyContract for Contract {
 
     fn get_count_3() -> u64 {
         storage.choice_3.count 
+    }
+
+    fn get_balance_1() -> u64 {
+        storage.choice_1.sum
+    }
+
+    fn get_balance_2() -> u64 {
+        storage.choice_2.sum
+    }
+
+    fn get_balance_3() -> u64 {
+        storage.choice_3.sum
     }
 
     fn get_option_1() -> str[1]{
