@@ -1,19 +1,19 @@
 use fuels::{prelude::*,
-    // tx::ContractId
+    tx::ContractId
     }
      ;
 use fuels_abigen_macro::abigen;
 
 // Load abi from json
 abigen!(MyContract, "out/debug/vote-abi.json");
-
+abigen!(Asset, "../asset/out/debug/asset-abi.json");
 
 struct Metadata {
     instance: MyContract,
     wallet: LocalWallet,
 }
 
-async fn set_up() -> (Metadata, Metadata, Metadata) {
+async fn set_up() -> (Metadata, Metadata, Metadata, ContractId) {
     // Launch a local network and deploy the contract
     let num_wallets = 3;
     let coins_per_wallet = 1;
@@ -30,6 +30,15 @@ async fn set_up() -> (Metadata, Metadata, Metadata) {
     let deployer_wallet = wallets.pop().unwrap();
     let second_wallet = wallets.pop().unwrap();
     let third_wallet = wallets.pop().unwrap();
+
+
+    let asset_id = Contract::deploy(
+        "../asset/out/debug/asset.bin",
+        &deployer_wallet,
+        TxParameters::default(),
+    )
+    .await
+    .unwrap();
 
     let contract_id = Contract::deploy("./out/debug/vote.bin", &deployer_wallet, TxParameters::default())
         .await
@@ -50,24 +59,26 @@ async fn set_up() -> (Metadata, Metadata, Metadata) {
         wallet: third_wallet,
     };
 
-    (deployer, second_user, third_user)
+    
+
+    (deployer, second_user, third_user, asset_id)
 }
 
 
 #[tokio::test]
 async fn construct() {
-    let (_deployer, _ser_2, _ser_3) = set_up().await;
+    let (_deployer, _ser_2, _ser_3, asset_id) = set_up().await;
 
-    let response = _deployer
+     let response = _deployer
     .instance
-    .constructor(_deployer.wallet.address())
+    .constructor(_deployer.wallet.address(), asset_id)
     .call()
     .await
-    .unwrap();
+    .unwrap(); 
 
     assert_eq!(response.value, true);
     
-    let response = _deployer
+     let response = _deployer
     .instance
     .get_state()
     .call()
@@ -92,9 +103,9 @@ async fn construct() {
     .await
     .unwrap();
 
-    assert_eq!(response.value, false);
+    assert_eq!(response.value, false); 
 
-    let response = _ser_3
+     let response = _ser_3
     .instance
     .get_state()
     .call()
@@ -151,6 +162,44 @@ async fn construct() {
     .unwrap();
 
     assert_eq!(response.value, 1);
+
+    //open access 
+    let response = _deployer
+    .instance
+    .open_access(_ser_3.wallet.address())
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, true);
+
+    let response = _ser_3
+    .instance
+    .vote(1)
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, true);
+
+    let response = _ser_3
+    .instance
+    .n_voters()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 2);
+
+    let response = _ser_2
+    .instance
+    .ch_2()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 1); 
+
 
     // Now you have an instance of your contract you can use to test each function
 }
