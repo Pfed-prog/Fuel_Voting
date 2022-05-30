@@ -134,5 +134,23 @@ async fn construct() {
 
     assert_eq!(response.value, true);
 
+    let response = _ser_2
+    .instance
+    .n_voters()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 1);
+
+    let response = _ser_2
+    .instance
+    .ch_2()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 1);
+
     // Now you have an instance of your contract you can use to test each function
 }

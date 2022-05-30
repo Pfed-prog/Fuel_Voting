@@ -35,6 +35,8 @@ abi MyContract {
     fn open_access(voter: Address) -> bool;
     fn is_admin() -> bool;
     fn vote(choice: u64) -> bool;
+    fn n_voters() -> u64;
+    fn ch_2()-> u64;
 }
 
 impl MyContract for Contract {
@@ -78,6 +80,18 @@ impl MyContract for Contract {
         if let Sender::Address(address) = sender.unwrap() {
             assert(storage.state ==1);
             if (address == storage.voter.address) {
+                storage.n_voters = storage.n_voters + 1;
+                if choice == 1 {
+                    storage.choice_1 = storage.choice_1 + 1}
+                else if choice == 2 {
+                    storage.choice_2 = storage.choice_2 + 1
+                }
+                else {
+                    storage.choice_3 = storage.choice_3 + 1
+                }
+                storage.voter = User {
+                    address: storage.creator.address, admin: false
+                };
                 return true;
             };
         } else {
@@ -95,6 +109,7 @@ impl MyContract for Contract {
             assert(storage.state ==1);
 
             if (address == storage.creator.address) {
+                
                 return true;
             };
         } else {
@@ -111,4 +126,13 @@ impl MyContract for Contract {
     fn get_creator() -> Address {
         storage.creator.address
     }
+
+    fn n_voters() -> u64 {
+        storage.n_voters
+    }
+
+    fn ch_2() -> u64 {
+        storage.choice_2
+    }
+
 }
