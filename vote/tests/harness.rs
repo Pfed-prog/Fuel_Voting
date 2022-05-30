@@ -298,11 +298,21 @@ async fn assets() {
 
     assert_eq!(response.value, 2); 
 
+    //check average donation
+    let response = _deployer
+    .instance
+    .get_average_donation_2()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 2); 
+
 
 }
 
 #[tokio::test]
-async fn quadratic_formula() {
+async fn multiple_voters() {
     let (_deployer, _ser_2, _ser_3) = set_up().await;
 
     let response = _deployer

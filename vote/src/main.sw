@@ -9,8 +9,8 @@ use std::{
     contract_id::ContractId,
     result::*,
     revert::revert,
-    hash::sha256,
-    token::transfer_to_output,
+    //hash::sha256,
+    //token::transfer_to_output,
 };
 
 
@@ -20,7 +20,7 @@ struct User {
 }
 
 struct Choice {
-    option: str[10],
+    //option: str[1], hardcoded
     count: u64,
     sum: u64
 }
@@ -34,7 +34,7 @@ storage {
     choice_3: Choice,
 }
 
-abi MyContract {                    //, asset: ContractId
+abi MyContract {
     fn constructor(creator: Address) -> bool;
 
     fn vote(choice: u64) -> bool;
@@ -55,6 +55,10 @@ abi MyContract {                    //, asset: ContractId
     fn get_count_1()-> u64;
     fn get_count_2()-> u64;
     fn get_count_3()-> u64;
+
+    fn get_average_donation_1() -> u64;
+    fn get_average_donation_2() -> u64;
+    fn get_average_donation_3() -> u64;
     
     fn get_state() -> u64;
     fn get_creator() -> Address;
@@ -70,7 +74,6 @@ impl MyContract for Contract {
             address: creator, admin: true
         };
         storage.state = 1;
-        //storage.asset = asset;
 
         true
     }
@@ -192,6 +195,18 @@ impl MyContract for Contract {
 
     fn get_option_3() -> str[1]{
         return "c"
+    }
+
+    fn get_average_donation_1() -> u64{
+        storage.choice_1.sum / storage.choice_1.count
+    }
+
+    fn get_average_donation_2() -> u64{
+        storage.choice_2.sum / storage.choice_2.count
+    }
+
+    fn get_average_donation_3() -> u64{
+        storage.choice_3.sum / storage.choice_3.count
     }
 
 }
