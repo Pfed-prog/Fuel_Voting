@@ -109,15 +109,17 @@ impl MyContract for Contract {
                 if choice == 1 {
                         storage.choice_1.count  = storage.choice_1.count + 1;
                         storage.choice_1.sum = storage.choice_1.sum + msg_amount();
+                        return true;
                 };
                 if choice == 2 {
-                        storage.choice_2.count  = storage.choice_1.count + 1;
+                        storage.choice_2.count  = storage.choice_2.count + 1;
                         storage.choice_2.sum = storage.choice_2.sum + msg_amount();
                         return true;
                 };
                 if choice == 3 {
                         storage.choice_3.count  = storage.choice_3.count  + 1;
                         storage.choice_3.sum = storage.choice_3.sum + msg_amount();
+                        return true;
                 };
 
                 //close the access to vote again

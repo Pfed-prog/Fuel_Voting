@@ -107,7 +107,7 @@ async fn construct() {
 
     assert_eq!(response.value, false); 
 
-// we can get the creator address
+    // we can get the creator address
     let response = _ser_2
     .instance
     .get_creator()
@@ -158,6 +158,7 @@ async fn construct() {
 
     assert_eq!(response.value, true);
 
+    //the vote passed
     let response = _ser_2
     .instance
     .vote(2)
@@ -184,15 +185,6 @@ async fn assets() {
 
     assert_eq!(response.value, true);
 
-    let response = _deployer
-    .instance
-    .get_count_2()
-    //.call_params(CallParameters::new(Some(11), None))
-    .call()
-    .await
-    .unwrap();
-
-    assert_eq!(response.value, 0);
 
     let response = _deployer
     .instance
@@ -213,6 +205,7 @@ async fn assets() {
 
     assert_eq!(response.value, true);
 
+    // check the asset transfer
     let response = _deployer
     .instance
     .get_balance_2()
@@ -222,6 +215,7 @@ async fn assets() {
 
     assert_eq!(response.value, 2); 
 
+    //check the correct number of votes
     let response = _deployer
     .instance
     .get_count_2()
@@ -231,6 +225,7 @@ async fn assets() {
 
     assert_eq!(response.value, 1); 
 
+    //check the correct number of votes
     let response = _deployer
     .instance
     .get_n_voters()
@@ -239,5 +234,57 @@ async fn assets() {
     .unwrap();
 
     assert_eq!(response.value, 1); 
+
+    // second vote
+
+    let response = _deployer
+    .instance
+    .open_access(_ser_2.wallet.address())
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, true);
+
+    let response = _ser_2
+    .instance
+    .vote(2)
+    .call_params(CallParameters::new(Some(2), None))
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, true);
+
+   // check the asset transfer
+    let response = _deployer
+    .instance
+    .get_balance_2()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 4); 
+    
+    //check the correct number of votes
+    let response = _deployer
+    .instance
+    .get_count_2()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 2); 
+
+    //check the correct number of votes
+    let response = _deployer
+    .instance
+    .get_n_voters()
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, 2); 
+
 
 }
