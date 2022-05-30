@@ -13,28 +13,50 @@ struct Metadata {
     wallet: LocalWallet,
 }
 
-async fn set_up() -> Metadata {
+async fn set_up() -> (Metadata, Metadata, Metadata) {
     // Launch a local network and deploy the contract
+    let num_wallets = 3;
+    let coins_per_wallet = 1;
+    let amount_per_coin = 1_000_000;
 
-    let wallet = launch_provider_and_get_single_wallet().await;
+    let config = WalletsConfig::new(
+        Some(num_wallets),
+        Some(coins_per_wallet),
+        Some(amount_per_coin),
+    );
 
+    let mut wallets = launch_provider_and_get_wallets(config).await;
 
-    let contract_id = Contract::deploy("./out/debug/vote.bin", &wallet, TxParameters::default())
+    let deployer_wallet = wallets.pop().unwrap();
+    let second_wallet = wallets.pop().unwrap();
+    let third_wallet = wallets.pop().unwrap();
+
+    let contract_id = Contract::deploy("./out/debug/vote.bin", &deployer_wallet, TxParameters::default())
         .await
         .unwrap();
 
     let deployer = Metadata {
-        instance: MyContract::new(contract_id.to_string(), wallet.clone()),
-        wallet: wallet,
+        instance: MyContract::new(contract_id.to_string(), deployer_wallet.clone()),
+        wallet: deployer_wallet,
     };
 
-    deployer
+    let second_user = Metadata {
+        instance: MyContract::new(contract_id.to_string(), second_wallet.clone()),
+        wallet: second_wallet,
+    };
+
+    let third_user = Metadata {
+        instance: MyContract::new(contract_id.to_string(), third_wallet.clone()),
+        wallet: third_wallet,
+    };
+
+    (deployer, second_user, third_user)
 }
 
 
 #[tokio::test]
 async fn construct() {
-    let _deployer = set_up().await;
+    let (_deployer, _ser_2, _ser_3) = set_up().await;
 
     let response = _deployer
     .instance
@@ -63,50 +85,54 @@ async fn construct() {
 
     assert_eq!(response.value, true);
 
-    // Now you have an instance of your contract you can use to test each function
-}
+    let response = _ser_3
+    .instance
+    .is_admin()
+    .call()
+    .await
+    .unwrap();
 
-/* #[tokio::test]
-async fn state() {
-    let _deployer = set_up().await;
+    assert_eq!(response.value, false);
 
-    let response = _deployer
+    let response = _ser_3
     .instance
     .get_state()
     .call()
     .await
     .unwrap();
 
-    assert_eq!(response.value, 0);
-    
-
-    // Now you have an instance of your contract you can use to test each function
-} */
+    assert_eq!(response.value, 1);
 
 
-#[tokio::test]
-async fn is_admin() {
-    let _deployer = set_up().await;
-
-
-    
-
-    // Now you have an instance of your contract you can use to test each function
-}
-
-#[tokio::test]
-async fn make_admin() {
-    let _deployer = set_up().await;
-
-    let response = _deployer
+    let response = _ser_2
     .instance
-    .make_admin()     
+    .get_creator()
     .call()
     .await
     .unwrap();
 
-    assert_eq!(response.value, false);
+    assert_eq!(response.value, _deployer.wallet.address());
+
     
+
+//open access 
+    let response = _deployer
+    .instance
+    .open_access(_ser_2.wallet.address())
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, true);
+
+    let response = _ser_2
+    .instance
+    .vote(2)
+    .call()
+    .await
+    .unwrap();
+
+    assert_eq!(response.value, true);
 
     // Now you have an instance of your contract you can use to test each function
 }
