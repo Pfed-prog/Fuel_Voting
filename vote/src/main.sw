@@ -19,13 +19,12 @@ struct User {
 }
 
 struct Choice {
-    //option: str[10],
+    option: str[10],
     count: u64,
-    //sum: u64
+    sum: u64
 }
 
 const STORAGE_KEY: b256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
-
 
 storage {
     asset: ContractId,
@@ -44,9 +43,15 @@ abi MyContract {
     fn open_access(voter: Address) -> bool;
     fn vote(choice: u64) -> bool;
     
+    fn get_option_1() -> str[1];
+    fn get_option_2() -> str[1];
+    fn get_option_3() -> str[1];
+
     fn is_admin() -> bool;
-    fn n_voters() -> u64;
-    fn ch_2()-> u64;
+    fn get_n_voters() -> u64;
+    fn get_count_1()-> u64;
+    fn get_count_2()-> u64;
+    fn get_count_3()-> u64;
     fn get_state() -> u64;
     fn get_creator() -> Address;
 }
@@ -67,7 +72,6 @@ impl MyContract for Contract {
     }
 
 
-
     fn open_access(voter: Address) -> bool {
         let sender: Result<Sender, AuthError> = msg_sender();
 
@@ -86,6 +90,7 @@ impl MyContract for Contract {
 
         false
     }
+
 
     fn vote(choice: u64) -> bool {
         let sender: Result<Sender, AuthError> = msg_sender();
@@ -140,14 +145,33 @@ impl MyContract for Contract {
         storage.creator.address
     }
     
-    //#[storage(read, write)]
-    fn n_voters() -> u64 {
+    fn get_n_voters() -> u64 {
         let value = get::<u64>(STORAGE_KEY);
         value
     }
 
-    fn ch_2() -> u64 {
+    fn get_count_1() -> u64 {
+        storage.choice_1.count
+    }
+    
+    fn get_count_2() -> u64 {
         storage.choice_2.count 
+    }
+
+    fn get_count_3() -> u64 {
+        storage.choice_3.count 
+    }
+
+    fn get_option_1() -> str[1]{
+        return "a"
+    }
+
+    fn get_option_2() -> str[1]{
+        return "b"
+    }
+
+    fn get_option_3() -> str[1]{
+        return "c"
     }
 
 }

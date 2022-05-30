@@ -147,7 +147,7 @@ async fn construct() {
 
     let response = _ser_2
     .instance
-    .n_voters()
+    .get_n_voters()
     .call()
     .await
     .unwrap();
@@ -156,7 +156,7 @@ async fn construct() {
 
     let response = _ser_2
     .instance
-    .ch_2()
+    .get_count_2()
     .call()
     .await
     .unwrap();
@@ -184,16 +184,17 @@ async fn construct() {
 
     let response = _ser_3
     .instance
-    .n_voters()
+    .get_n_voters()
     .call()
     .await
     .unwrap();
 
     assert_eq!(response.value, 2);
 
-    let response = _ser_2
+
+    let response = _deployer
     .instance
-    .ch_2()
+    .get_count_2()
     .call()
     .await
     .unwrap();
