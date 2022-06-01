@@ -6,7 +6,7 @@ The deployer of the contract has an authority to assign acess to vote.
 
 The voters choose one of the three options and can signal their preference with providing native assets.
 
-In the contract we have implemented methods:
+In the contract we have implemented methods, located in ```vote``` folder:
 
 to access the address of the creator - ```get_creator()```
 
@@ -25,3 +25,8 @@ methods ```get_average_donation_...()``` provide the average donation per option
 method ```get_n_voters()```  provides the total number of voters
 
 method ```get_state()``` provides the state of the application
+
+## Furher Work
+
+- Implement Quadratic Funding
+- Add Funding with non native Assets
