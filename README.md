@@ -5,6 +5,7 @@ In this repository we have implemented Governance Voting Process on Fuel Blockch
 The deployer of the contract has an authority to assign acess to vote.
 
 The voters choose one of the three options and can signal their preference with providing native assets.
+## Implementation
 
 In the contract we have implemented methods, located in ```vote``` folder:
 
@@ -26,6 +27,7 @@ method ```get_n_voters()```  provides the total number of voters
 
 method ```get_state()``` provides the state of the application
 
+The tests demonstrate that the application works as intended
 ## Furher Work
 
 - Implement Quadratic Funding
